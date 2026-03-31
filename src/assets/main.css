@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,700;0,800;0,900;1,700;1,800;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Poppins:wght@300;400;600&display=swap');
 @import 'tailwindcss';
 
 
@@ -14,6 +14,19 @@
 
 @theme {
   --font-poppins: 'Poppins';
+}
+
+body {
+  font-family: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background: radial-gradient(1200px circle at 10% 10%, rgba(168,85,247,0.15), transparent 35%),
+    radial-gradient(900px circle at 90% 20%, rgba(34,211,238,0.12), transparent 40%),
+    radial-gradient(700px circle at 60% 90%, rgba(251,146,60,0.10), transparent 45%),
+    #050816;
+  color: rgba(255,255,255,0.92);
+}
+
+.anime-font {
+  font-family: 'Orbitron', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
 }
 
 a,

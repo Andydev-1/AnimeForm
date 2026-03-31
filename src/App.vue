@@ -1,39 +1,60 @@
+<script setup>
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import { useAuthStore } from '@/stores/auth.js'
+
+import NeonLogo from '@/components/NeonLogo.vue'
+import GlowNavLink from '@/components/GlowNavLink.vue'
+import gsap from 'gsap'
+
+const auth = useAuthStore()
+const route = useRoute()
+const viewEl = ref(null)
+
+onMounted(() => {
+  auth.hydrate()
+})
+
+const navItems = computed(() => {
+  const items = [
+    { to: '/dashboard', label: 'Dashboard', show: auth.isAuthenticated },
+    { to: '/workout', label: 'Workout', show: auth.isAuthenticated },
+    { to: '/progress', label: 'Progress', show: auth.isAuthenticated },
+    { to: '/profile', label: 'Profile', show: auth.isAuthenticated },
+    { to: '/admin', label: 'Admin', show: auth.isAuthenticated && auth.user?.role === 'admin' },
+  ]
+
+  return items.filter((i) => i.show)
+})
+
+watch(
+  () => route.fullPath,
+  async () => {
+    await nextTick()
+    if (!viewEl.value) return
+    gsap.fromTo(
+      viewEl.value,
+      { opacity: 0, y: 10 },
+      { opacity: 1, y: 0, duration: 0.4, ease: 'power3.out' }
+    )
+  }
+)
+</script>
+
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-slate-700 to-slate-800 flex flex-col items-center justify-center overflow-hidden">
-    <div class="relative">
-      <!-- Logo container with animation -->
-      <div 
-        class="relative z-10 transform transition-all duration-1000 ease-out"
-        :class="isVisible ? 'scale-100 opacity-100' : 'scale-50 opacity-0'"
-      >
-        <div class="bg-gray-100 rounded-md shadow-2xl w-40 h-40">
-          <Zap 
-            :size="80" 
-            class="text-teal-500 animate-pulse"
-            :stroke-width="2"
-          />
-          <img src="@/assets/img/logo1.png" alt="logo" srcset="" class="rounded-md w-full">
-        </div>
-        
-        <!-- Animated rings -->
-       
-      </div>
+  <div class="min-h-screen bg-animafront">
+    <div class="mx-auto w-full max-w-6xl px-4 py-6">
+      <header class="flex items-center justify-between gap-4">
+        <NeonLogo />
+        <nav v-if="navItems.length" class="hidden items-center gap-3 md:flex">
+          <GlowNavLink v-for="item in navItems" :key="item.to" :to="item.to" :label="item.label" />
+        </nav>
+      </header>
+
+      <main ref="viewEl" class="mt-8">
+        <RouterView />
+      </main>
     </div>
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref, onMounted } from 'vue';
-
-
-const isVisible = ref(false);
-const isTextVisible = ref(false);
-
-onMounted(() => {
-  // Trigger logo animation on mount
-  setTimeout(() => isVisible.value = true, 300);
-  
-  // Trigger text animation after logo animation
-  setTimeout(() => isTextVisible.value = true, 1200);
-});
-</script>

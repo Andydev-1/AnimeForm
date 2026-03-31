@@ -10,6 +10,10 @@ export default {
                 'primary': '#334155', // Soft Navy
                 'secondary': '#E5E7EB', // Light Gray
                 'accent': '#14B8A6', // Teal Green
+                'animafront': '#050816', // Deep midnight
+                'neonPurple': '#A855F7',
+                'neonCyan': '#22D3EE',
+                'neonOrange': '#FB923C',
             }
         },
     },

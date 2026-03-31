@@ -1,0 +1,190 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  user
+  admin
+}
+
+enum Goal {
+  cut
+  maintain
+  bulk
+}
+
+enum FitnessLevel {
+  beginner
+  intermediate
+  advanced
+}
+
+enum CharacterDifficulty {
+  beginner
+  intermediate
+  advanced
+}
+
+enum WorkoutCategory {
+  Strength
+  Endurance
+  Agility
+  Mobility
+}
+
+enum ProgressLogType {
+  XP
+  WEIGHT
+  WORKOUT_COMPLETED
+  SET_RECORDED
+}
+
+model Users {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  role         UserRole @default(user)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  Profiles         Profiles?
+  ProgressLogs     ProgressLogs[]
+  UserAchievements UserAchievements[]
+}
+
+model Profiles {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   Users  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  heightCm     Int
+  weightKg     Float
+  goal         Goal
+  fitnessLevel FitnessLevel
+
+  selectedCharacterId String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  selectedCharacter Characters? @relation("ProfileSelectedCharacter", fields: [selectedCharacterId], references: [id])
+}
+
+model Characters {
+  id            String              @id @default(uuid())
+  name          String              @unique
+  bodyType      String
+  difficulty    CharacterDifficulty
+  trainingStyle String
+
+  xpModifier Float   @default(1.0)
+  isActive   Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  Workouts Workouts[]
+  profiles Profiles[] @relation("ProfileSelectedCharacter")
+}
+
+model Exercises {
+  id       String          @id @default(uuid())
+  name     String
+  category WorkoutCategory
+
+  // Unit is optional; frontend can decide how to display.
+  unit      String?
+  createdAt DateTime @default(now())
+
+  WorkoutExercises WorkoutExercises[]
+}
+
+model Workouts {
+  id String @id @default(uuid())
+
+  characterId String
+  character   Characters @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  dayIndex  Int // 0..n (e.g., week schedule)
+  category  WorkoutCategory
+  title     String
+  targetMin Int?
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  WorkoutExercises WorkoutExercises[]
+  ProgressLogs     ProgressLogs[]
+
+  @@index([characterId, dayIndex])
+}
+
+model WorkoutExercises {
+  id String @id @default(uuid())
+
+  workoutId String
+  workout   Workouts @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+
+  exerciseId String
+  exercise   Exercises @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+
+  sortOrder  Int
+  sets       Int
+  repsTarget Int
+  restSec    Int
+
+  completedSetLogs ProgressLogs[] @relation("WorkoutExerciseSetLogs")
+
+  @@unique([workoutId, exerciseId])
+  @@index([exerciseId])
+}
+
+model Achievements {
+  id String @id @default(uuid())
+
+  key         String @unique
+  name        String
+  description String
+
+  criteriaType  String
+  criteriaValue Int
+
+  isHidden  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  userAchievements UserAchievements[]
+}
+
+model UserAchievements {
+  id            String       @id @default(uuid())
+  userId        String
+  user          Users        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievementId String
+  achievement   Achievements @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  unlockedAt DateTime @default(now())
+
+  @@unique([userId, achievementId])
+  @@index([achievementId])
+}
+
+model ProgressLogs {
+  id     String @id @default(uuid())
+  userId String
+  user   Users  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type     ProgressLogType
+  value    Float?
+  meta     Json?
+  loggedAt DateTime        @default(now())
+
+  workoutId String?
+  workout   Workouts? @relation(fields: [workoutId], references: [id])
+
+  workoutExerciseId String?
+  workoutExercise   WorkoutExercises? @relation("WorkoutExerciseSetLogs", fields: [workoutExerciseId], references: [id])
+}
