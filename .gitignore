@@ -30,3 +30,9 @@ coverage
 *.tsbuildinfo
 
 .vercel
+
+# Environment files
+.env
+.env.*
+backend/.env
+frontend/.env
