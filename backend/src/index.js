@@ -18,10 +18,22 @@ dotenv.config()
 const app = express()
 
 app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'https://anime-form-l6fx-andydev-1s-projects.vercel.app',
-  ],
+  origin(origin, callback) {
+    if (!origin) return callback(null, true)
+
+    const allowed = [
+      'http://localhost:5173',
+      'https://anime-form-psi.vercel.app',
+    ]
+
+    if (allowed.includes(origin)) return callback(null, true)
+
+    if (/\.vercel\.app$/.test(new URL(origin).hostname)) {
+      return callback(null, true)
+    }
+
+    return callback(new Error(`CORS blocked for origin: ${origin}`))
+  },
   credentials: true,
 }))
 
