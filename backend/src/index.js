@@ -26,7 +26,10 @@ app.use(cors({
 }))
 
 app.use(express.json())
-
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.url} origin=${req.headers.origin || 'none'}`)
+  next()
+})
 app.get('/api/health', (req, res) => {
   res.json({ ok: true })
 })
