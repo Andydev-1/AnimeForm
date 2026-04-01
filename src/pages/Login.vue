@@ -64,8 +64,14 @@ onMounted(() => {
 })
 
 async function onSubmit() {
-  await auth.login({ email: email.value, password: password.value })
-  router.push('/select-character')
+  const success = await auth.login({
+    email: email.value,
+    password: password.value
+  })
+
+  if (success) {
+    router.push('/select-character')
+  }
 }
 </script>
 

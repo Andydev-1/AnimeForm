@@ -14,53 +14,72 @@ function signToken(user) {
 }
 
 router.post('/register', async (req, res) => {
-  const { email, password } = req.body || {}
-  if (!email || !password) return res.status(400).json({ message: 'Email and password are required' })
+  console.log('REGISTER HIT!', req.body)
+  try {
+    const { email, password } = req.body || {}
 
-  const existing = await prisma.users.findUnique({ where: { email } })
-  if (existing) return res.status(409).json({ message: 'Email already in use' })
+    if (!email || !password)
+      return res.status(400).json({ message: 'Email and password are required' })
 
-  const passwordHash = await bcrypt.hash(password, 10)
-  const user = await prisma.users.create({
-    data: {
-      email,
-      passwordHash,
-      role: 'user',
-      Profiles: {
-        create: {
-          heightCm: 170,
-          weightKg: 70,
-          goal: 'maintain',
-          fitnessLevel: 'intermediate',
-        },
+    const existing = await prisma.users.findUnique({ where: { email } })
+    if (existing) return res.status(409).json({ message: 'Email already in use' })
+
+    const passwordHash = await bcrypt.hash(password, 10)
+
+    const user = await prisma.users.create({
+      data: {
+        email,
+        passwordHash,
+        role: 'user',
       },
-    },
-    include: { Profiles: true },
-  })
+    })
 
-  const token = signToken(user)
-  return res.status(201).json({
-    token,
-    user: { id: user.id, email: user.email, role: user.role },
-  })
+    const token = signToken(user)
+    res.status(201).json({
+  token,
+  user: {
+    id: user.id,
+    email: user.email,
+    role: user.role,
+  },
+})
+    console.log('REGISTER SUCCESS!', token, user)
+    return res.status(201).json({
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+      },
+    })
+  } catch (err) {
+    console.error('REGISTER ERROR:', err)
+    res.status(500).json({ message: 'Server error' })
+  }
 })
 
 router.post('/login', async (req, res) => {
-  const { email, password } = req.body || {}
-  if (!email || !password) return res.status(400).json({ message: 'Email and password are required' })
+  console.log('LOGIN HIT!', req.body)
+  try {
+    const { email, password } = req.body || {}
+    if (!email || !password)
+      return res.status(400).json({ message: 'Email and password are required' })
 
-  const user = await prisma.users.findUnique({ where: { email } })
-  if (!user) return res.status(401).json({ message: 'Invalid credentials' })
+    const user = await prisma.users.findUnique({ where: { email } })
+    if (!user) return res.status(401).json({ message: 'Invalid credentials' })
 
-  const ok = await bcrypt.compare(password, user.passwordHash)
-  if (!ok) return res.status(401).json({ message: 'Invalid credentials' })
+    const ok = await bcrypt.compare(password, user.passwordHash)
+    if (!ok) return res.status(401).json({ message: 'Invalid credentials' })
 
-  const token = signToken(user)
-  return res.json({
-    token,
-    user: { id: user.id, email: user.email, role: user.role },
-  })
+    const token = signToken(user)
+    return res.json({
+      token,
+      user: { id: user.id, email: user.email, role: user.role },
+    })
+  } catch (err) {
+    console.error('LOGIN ERROR:', err)
+    return res.status(500).json({ message: 'Server error' })
+  }
 })
-
 export default router
 
