@@ -16,13 +16,7 @@ import achievementsRoutes from './routes/achievements.js'
 dotenv.config()
 
 const app = express()
-app.use(cors({
-  origin: ['http://localhost:5173',
-     'https://anime-form-l6fx-andydev-1s-projects.vercel.app/'
-    ],
-
-  credentials: true,
-}))
+app.use(cors())
 app.use(express.json())
 
 app.get('/api/health', (req, res) => {
